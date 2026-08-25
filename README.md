@@ -22,8 +22,9 @@ Pulse keeps services **awake**, it does not do deep health checking:
 | Endpoint        | Auth                              | What it does |
 | --------------- | --------------------------------- | ------------ |
 | `GET /api/ping` | `Authorization: Bearer <CRON_SECRET>` **or** `?key=<CRON_SECRET>` | Pings all services in parallel, stores last result per service, returns JSON results + summary. This is the cron entrypoint. |
+| `POST /check-now` | Same-origin dashboard request (the "Check now" button), or the cron secret | Runs a ping immediately, then redirects back to the dashboard. |
 | `GET /api/status` | none | Returns the in-memory last-results map (same record shape), 200 always. |
-| `GET /`         | none | HTML dashboard (auto-refresh 30 s). |
+| `GET /`         | none | HTML dashboard (auto-refresh 30 s, "Check now" button). |
 
 Ping response shape:
 
@@ -148,6 +149,9 @@ Alternative: UptimeRobot → Add monitor → type **HTTP(s)** → same URL → i
   "last run on this instance" — acceptable for keep-alive purposes. The dashboard shows
   configured-but-not-yet-pinged services as `PENDING`.
 - Every ping logs a structured line visible in Vercel logs: `[pulse] name OK 200 143ms`.
+- `POST /check-now` (the dashboard button) is intentionally usable without the secret for
+  same-origin browser requests — it can only ping your own configured services, which is
+  the service's purpose anyway. Non-same-origin calls need the cron secret.
 - `maxDuration: 60` on the function gives slow services room; worst case ≈ one timeout
   window since all services are pinged in parallel.
 - No database, no persistence, no in-app scheduler — by design.
