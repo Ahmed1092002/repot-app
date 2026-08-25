@@ -87,23 +87,29 @@ export function createApp() {
       } catch (err) {
         return res.status(500).json({ error: 'configuration error', detail: err.message });
       }
-      const startedAt = new Date().toISOString();
-      const t0 = Date.now();
-      let results = [];
-      if (services.length > 0) {
-        const settled = await Promise.allSettled(services.map((s) => pingService(s)));
-        results = settled.map((r) =>
-          r.status === 'fulfilled'
-            ? r.value
-            : { ok: false, error: String(r.reason), checkedAt: new Date().toISOString() }
-        );
-        for (const r of results) if (r && r.name) store.set(r);
-      }
-      res
-        .set('cache-control', 'no-store')
-        .json({ startedAt, durationMs: Date.now() - t0, results, summary: summarize(results) });
+      const payload = await runPings(services);
+      res.set('cache-control', 'no-store').json(payload);
     } catch (err) {
       console.error('[pulse] ERROR /api/ping', err);
+      res.status(500).json({ error: 'internal error', detail: err?.message ?? String(err) });
+    }
+  });
+
+  app.post('/check-now', async (req, res) => {
+    try {
+      if (!canRunCheckNow(req)) {
+        return res.status(401).json({ error: 'unauthorized: check-now requires the cron secret or a same-origin dashboard request' });
+      }
+      let services;
+      try {
+        services = getConfig();
+      } catch (err) {
+        return res.status(500).send(`Configuration error: ${err.message}`);
+      }
+      if (services.length > 0) await runPings(services);
+      res.redirect(303, '/');
+    } catch (err) {
+      console.error('[pulse] ERROR /check-now', err);
       res.status(500).json({ error: 'internal error', detail: err?.message ?? String(err) });
     }
   });
