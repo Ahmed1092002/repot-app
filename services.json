@@ -1,5 +1,16 @@
 [
-  { "name": "signalops-api", "url": "https://signalops-api.onrender.com/actuator/health", "strict": true },
-  { "name": "legacy-spring", "url": "https://legacy-spring.onrender.com/" },
-  { "name": "portfolio-site", "url": "https://my-portfolio.vercel.app/", "strict": true }
+  {
+    "name": "signalops-api",
+    "url": "https://signalops-api.onrender.com/actuator/health",
+    "strict": true
+  },
+
+  {
+    "name": "booking-kpm1",
+    "url": "https://booking-kpm1.onrender.com/swagger-ui/index.html"
+  },
+  {
+    "name": "ecommerce-spring-luoa",
+    "url": "https://ecommerce-spring-luoa.onrender.com/swagger-ui/index.html"
+  }
 ]
