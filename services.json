@@ -1,0 +1,5 @@
+[
+  { "name": "signalops-api", "url": "https://signalops-api.onrender.com/actuator/health", "strict": true },
+  { "name": "legacy-spring", "url": "https://legacy-spring.onrender.com/" },
+  { "name": "portfolio-site", "url": "https://my-portfolio.vercel.app/", "strict": true }
+]

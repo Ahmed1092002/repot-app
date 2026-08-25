@@ -1,0 +1,18 @@
+{
+  "name": "pulse",
+  "version": "1.0.0",
+  "description": "Keep-alive pinger + mini uptime dashboard for free-tier Render services, deployed on Vercel",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test test/"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
