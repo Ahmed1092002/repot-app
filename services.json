@@ -1,11 +1,5 @@
 [
   {
-    "name": "signalops-api",
-    "url": "https://signalops-api.onrender.com/actuator/health",
-    "strict": true
-  },
-
-  {
     "name": "booking-kpm1",
     "url": "https://booking-kpm1.onrender.com/swagger-ui/index.html"
   },
