@@ -23,18 +23,51 @@ function getConfig() {
   return configCache;
 }
 
-function isAuthorized(req) {
+function hasValidSecret(req) {
   const secret = process.env.CRON_SECRET;
-  if (!secret) {
-    console.warn('[pulse] WARN CRON_SECRET is not set — /api/ping is UNPROTECTED (development mode only)');
-    return true;
-  }
+  if (!secret) return false;
   const header = req.get('authorization') ?? '';
   const bearer = header.startsWith('Bearer ') ? header.slice(7) : null;
   const key = req.query.key != null ? String(req.query.key) : null;
   return Boolean(
     (bearer !== null && safeEqual(bearer, secret)) || (key !== null && safeEqual(key, secret))
   );
+}
+
+function isAuthorized(req) {
+  if (!process.env.CRON_SECRET) {
+    console.warn('[pulse] WARN CRON_SECRET is not set — /api/ping is UNPROTECTED (development mode only)');
+    return true;
+  }
+  return hasValidSecret(req);
+}
+
+function isSameOrigin(req) {
+  const origin = req.get('origin');
+  if (!origin) return false;
+  try {
+    return new URL(origin).host === req.get('host');
+  } catch {
+    return false;
+  }
+}
+
+function canRunCheckNow(req) {
+  if (!process.env.CRON_SECRET) return true;
+  return hasValidSecret(req) || isSameOrigin(req);
+}
+
+async function runPings(services) {
+  const startedAt = new Date().toISOString();
+  const t0 = Date.now();
+  const settled = await Promise.allSettled(services.map((s) => pingService(s)));
+  const results = settled.map((r) =>
+    r.status === 'fulfilled'
+      ? r.value
+      : { ok: false, error: String(r.reason), checkedAt: new Date().toISOString() }
+  );
+  for (const r of results) if (r && r.name) store.set(r);
+  return { startedAt, durationMs: Date.now() - t0, results, summary: summarize(results) };
 }
 
 export function createApp() {
